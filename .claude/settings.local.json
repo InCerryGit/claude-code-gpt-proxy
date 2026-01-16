@@ -3,7 +3,13 @@
     "allow": [
       "Bash(docker logs:*)",
       "Bash(docker exec:*)",
-      "Bash(docker ps:*)"
+      "Bash(docker ps:*)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(docker build:*)",
+      "Bash(HTTP_PROXY=\"http://127.0.0.1:10808\" HTTPS_PROXY=\"http://127.0.0.1:10808\" NO_PROXY=\"localhost,127.0.0.1\" docker build:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(uv sync --help:*)"
     ]
   }
 }
