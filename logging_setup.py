@@ -1,8 +1,6 @@
 import glob
 import logging
 import os
-import traceback
-import warnings
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 
@@ -41,19 +39,6 @@ class ColorizedFormatter(logging.Formatter):
 
 
 def setup_logging():
-    def _log_warning_with_traceback(message, category, filename, lineno, file=None, line=None):
-        stack = "".join(traceback.format_stack())
-        logging.getLogger().warning(
-            "Python warning: %s:%s: %s: %s\nStack trace:\n%s",
-            filename,
-            lineno,
-            category.__name__,
-            message,
-            stack,
-        )
-
-    warnings.showwarning = _log_warning_with_traceback
-
     log_level_name = os.environ.get("LOG_LEVEL", "INFO").upper()
     log_level = getattr(logging, log_level_name, logging.WARNING)
     if not isinstance(log_level, int):
