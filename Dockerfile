@@ -1,4 +1,4 @@
-FROM python:latest
+FROM python:3.12-slim
 
 WORKDIR /claude-code-proxy
 
@@ -6,7 +6,8 @@ WORKDIR /claude-code-proxy
 COPY pyproject.toml uv.lock ./
 
 # Install uv and project dependencies
-RUN pip install --upgrade uv && uv sync --locked
+# Use unlocked sync to avoid build failure when uv.lock is out of date
+RUN pip install --upgrade uv && uv sync
 
 # Copy project code to current directory
 COPY . .
