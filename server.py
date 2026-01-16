@@ -207,6 +207,10 @@ OPENAI_MODELS = [
     "gpt-4o-mini-audio-preview",
     "gpt-4.1",  # Added default big model
     "gpt-4.1-mini", # Added default small model
+    "gpt-5.1"
+    "gpt-5.1-codex",
+    "gpt-5.1-codex-mini",
+    "gpt-5.2-chat",
     "gpt-5.2",
     "gpt-5.2-codex",
 ]
