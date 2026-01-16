@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
+import asyncio
 import json
 import logging
 import time
@@ -25,6 +26,10 @@ logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 logging.getLogger("uvicorn.error").setLevel(logging.WARNING)
 
 app = FastAPI()
+
+
+async def run_blocking(func, *args, **kwargs):
+    return await asyncio.to_thread(func, *args, **kwargs)
 
 
 @app.middleware("http")
@@ -157,7 +162,7 @@ async def create_message(request: MessagesRequest, raw_request: Request):
             if is_responses_model:
                 litellm_request["stream"] = False
                 start_time = time.time()
-                litellm_response = litellm.completion(**litellm_request)
+                litellm_response = await run_blocking(litellm.completion, **litellm_request)
                 logger.debug(
                     "✅ RESPONSE RECEIVED (synth stream): Model=%s, Time=%.2fs",
                     litellm_request.get("model"),
@@ -186,7 +191,7 @@ async def create_message(request: MessagesRequest, raw_request: Request):
             200,
         )
         start_time = time.time()
-        litellm_response = litellm.completion(**litellm_request)
+        litellm_response = await run_blocking(litellm.completion, **litellm_request)
         logger.debug(
             "✅ RESPONSE RECEIVED: Model=%s, Time=%.2fs",
             litellm_request.get("model"),
@@ -269,7 +274,7 @@ async def count_tokens(request: TokenCountRequest, raw_request: Request):
             if request.model.startswith("openai/") and OPENAI_BASE_URL:
                 token_counter_args["api_base"] = OPENAI_BASE_URL
 
-            token_count = token_counter(**token_counter_args)
+            token_count = await run_blocking(token_counter, **token_counter_args)
             return TokenCountResponse(input_tokens=token_count)
         except ImportError:
             logger.error("Could not import token_counter from litellm")
