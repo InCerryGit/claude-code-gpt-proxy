@@ -33,6 +33,14 @@ def _strip_provider_prefix(model: str) -> str:
     return model
 
 
+def _get_field(obj: Any, name: str, default: Any = None) -> Any:
+    if hasattr(obj, name):
+        return getattr(obj, name)
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return default
+
+
 def convert_anthropic_to_litellm(anthropic_request: MessagesRequest, logger) -> Dict[str, Any]:
     messages = []
 
@@ -298,33 +306,14 @@ def convert_litellm_to_anthropic(
             usage_info = litellm_response.usage
             response_id = getattr(litellm_response, "id", f"msg_{uuid.uuid4()}")
         else:
-            try:
-                response_dict = (
-                    litellm_response if isinstance(litellm_response, dict) else litellm_response.dict()
-                )
-            except AttributeError:
-                try:
-                    response_dict = (
-                        litellm_response.model_dump()
-                        if hasattr(litellm_response, "model_dump")
-                        else litellm_response.__dict__
-                    )
-                except AttributeError:
-                    response_dict = {
-                        "id": getattr(litellm_response, "id", f"msg_{uuid.uuid4()}"),
-                        "choices": getattr(litellm_response, "choices", [{}]),
-                        "usage": getattr(litellm_response, "usage", {}),
-                    }
-
-            choices = response_dict.get("choices", [{}])
-            message = choices[0].get("message", {}) if choices and len(choices) > 0 else {}
-            content_text = message.get("content", "")
-            tool_calls = message.get("tool_calls", None)
-            finish_reason = (
-                choices[0].get("finish_reason", "stop") if choices and len(choices) > 0 else "stop"
-            )
-            usage_info = response_dict.get("usage", {})
-            response_id = response_dict.get("id", f"msg_{uuid.uuid4()}")
+            choices = _get_field(litellm_response, "choices", [{}])
+            first_choice = choices[0] if choices and len(choices) > 0 else {}
+            message = _get_field(first_choice, "message", {})
+            content_text = _get_field(message, "content", "")
+            tool_calls = _get_field(message, "tool_calls", None)
+            finish_reason = _get_field(first_choice, "finish_reason", "stop")
+            usage_info = _get_field(litellm_response, "usage", {})
+            response_id = _get_field(litellm_response, "id", f"msg_{uuid.uuid4()}")
 
         content = []
 
