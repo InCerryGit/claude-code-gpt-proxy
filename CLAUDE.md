@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Language preference
+- 请始终使用中文回复。
+
 ## Common commands
 
 ### Run the server (dev)
